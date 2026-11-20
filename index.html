@@ -8,32 +8,291 @@
 <title>SampleTrack — QC Workspace</title>
 <link rel="icon" href="./favicon.svg" type="image/svg+xml">
 <style>
+  :root {
+    --bg: #eef2f8;
+    --panel: #f8fafc;
+    --line: #dbe3ee;
+    --line-2: #ffffff;
+    --ink: #0d1b2e;
+    --muted: #64748b;
+    --accent: #1d4ed8;
+    --success: #16a34a;
+    --warn: #d97706;
+    --danger: #dc2626;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0a1220;
+      --panel: #0f1a2c;
+      --line: #243b5c;
+      --line-2: #34547e;
+      --ink: #e6eefc;
+      --muted: #7b90ae;
+      --accent: #5b9dff;
+      --success: #4ade80;
+      --warn: #fbbf24;
+      --danger: #f87171;
+    }
+  }
   html, body {
     margin: 0; width: 100%; height: 100%;
     overflow: hidden; overscroll-behavior: none; touch-action: none;
-    background: #eef2f8; color: #0d1b2e;
+    background: var(--bg); color: var(--ink);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
-    html, body { background: #0a1220; color: #e6eefc; }
+  #skeleton {
+    position: fixed; inset: 0; z-index: 5;
+    display: flex; background: var(--bg);
   }
+  .sk-side {
+    width: 216px; flex: none;
+    background: var(--panel);
+    border-right: 1px solid var(--line);
+    padding: 18px 14px;
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .sk-brand { display: flex; align-items: center; gap: 10px; height: 30px; }
+  .sk-logo { width: 22px; height: 22px; border-radius: 2px; }
+  .sk-nav { display: flex; flex-direction: column; gap: 10px; }
+  .sk-navrow { height: 30px; border-radius: 2px; }
+  .sk-side-bottom { margin-top: auto; display: flex; flex-direction: column; gap: 10px; }
+  .sk-user { display: flex; align-items: center; gap: 9px; padding: 8px; border-radius: 2px; background: var(--panel); }
+  .sk-avatar { width: 26px; height: 26px; border-radius: 2px; flex: none; }
+  .sk-col { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .sk-main {
+    flex: 1; min-width: 0;
+    padding: 22px 26px;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .sk-head { display: flex; flex-direction: column; gap: 8px; }
+  .sk-head-top { display: flex; align-items: center; gap: 10px; height: 34px; }
+  .sk-spacer { flex: 1; }
+  .sk-pill { width: 32px; height: 28px; border-radius: 2px; }
+  .sk-pill.small { width: 18px; }
+  .sk-line, .sk-block, .sk-avatar, .sk-pill, .sk-logo, .sk-navrow {
+    background: linear-gradient(90deg, var(--line) 25%, var(--line-2) 37%, var(--line) 63%);
+    background-size: 400% 100%;
+    animation: sk-shimmer 1.5s ease-in-out infinite;
+  }
+  .sk-line { height: 10px; border-radius: 2px; }
+  .sk-line.small { height: 8px; }
+  .sk-line.title { height: 28px; }
+  .sk-line.value { height: 32px; margin-top: 6px; }
+  .sk-block { height: 36px; border-radius: 3px; }
+  .sk-metrics {
+    display: grid; grid-template-columns: 1.25fr repeat(5, 1fr);
+    border: 1px solid var(--line); border-radius: 4px; overflow: hidden;
+    background: var(--panel);
+  }
+  .sk-metric {
+    padding: 14px; min-width: 0;
+    display: flex; flex-direction: column; gap: 8px;
+    border-right: 1px solid var(--line);
+  }
+  .sk-metric:last-child { border-right: 0; }
+  .sk-metric .sk-bar { height: 2px; width: 100%; margin-top: 8px; background: var(--line); }
+  .sk-metric:nth-child(1) .sk-bar { background: var(--accent); }
+  .sk-metric:nth-child(2) .sk-bar { background: var(--muted); }
+  .sk-metric:nth-child(3) .sk-bar { background: var(--warn); }
+  .sk-metric:nth-child(4) .sk-bar { background: var(--danger); }
+  .sk-metric:nth-child(5) .sk-bar { background: var(--success); }
+  .sk-metric:nth-child(6) .sk-bar { background: var(--danger); }
+  .sk-toolbar { display: flex; align-items: center; gap: 10px; height: 40px; }
+  .sk-toolbar .sk-block.search { width: 250px; height: 34px; flex: none; }
+  .sk-toolbar .sk-line { height: 9px; }
+  .sk-table { border-top: 1px solid var(--line); margin-top: 2px; }
+  .sk-tr {
+    display: grid; grid-template-columns: 1.4fr 1fr .7fr 1.4fr 1.5fr .9fr 1fr 16px;
+    gap: 10px; align-items: center;
+    height: 48px; border-bottom: 1px solid var(--line);
+  }
+  .sk-th { height: 30px; }
+  .sk-tr .sk-line { height: 9px; }
+  .sk-tr .sk-line.tall { height: 12px; }
+  .sk-cards { display: none; }
+  .sk-bottom { display: none; }
+  .w6 { width: 6%; } .w8 { width: 8%; } .w12 { width: 12%; } .w18 { width: 18%; }
+  .w20 { width: 20%; } .w24 { width: 24%; } .w28 { width: 28%; } .w32 { width: 32%; }
+  .w36 { width: 36%; } .w40 { width: 40%; } .w46 { width: 46%; } .w50 { width: 50%; }
+  .w56 { width: 56%; } .w60 { width: 60%; } .w66 { width: 66%; } .w70 { width: 70%; }
+  .w76 { width: 76%; } .w80 { width: 80%; } .w86 { width: 86%; } .w90 { width: 90%; }
   #status {
-    font: 11px/1.6 ui-monospace, "IBM Plex Mono", Consolas, monospace;
-    text-transform: uppercase; letter-spacing: .12em;
-    padding: 24px;
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    z-index: 6; margin: 0;
+    font: 10.5px/1.6 ui-monospace, "IBM Plex Mono", Consolas, monospace;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted); pointer-events: none;
+  }
+  #status.error {
+    inset: 0; bottom: auto; left: 0; transform: none;
+    display: grid; place-items: center; padding: 28px;
+    background: var(--bg); color: var(--ink);
+    font: 14px/1.6 ui-sans-serif, system-ui, sans-serif;
+    letter-spacing: 0; text-transform: none; text-align: center;
+  }
+  @keyframes sk-shimmer {
+    0% { background-position: 100% 0; }
+    100% { background-position: -100% 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sk-line, .sk-block, .sk-avatar, .sk-pill, .sk-logo, .sk-navrow { animation: none; }
+  }
+  @media (max-width: 999px) {
+    .sk-side { display: none; }
+    .sk-main { padding: 14px 14px 70px; gap: 12px; }
+    .sk-head-top { height: 30px; }
+    .sk-head .sk-line.title { height: 26px; width: 52%; }
+    .sk-head .sk-line:not(.title) { width: 66%; }
+    .sk-metrics { grid-template-columns: repeat(3, 1fr); }
+    .sk-metric { padding: 12px; }
+    .sk-metric:nth-child(3) { border-right: 0; }
+    .sk-metric:nth-child(-n+3) { border-bottom: 1px solid var(--line); }
+    .sk-toolbar { flex-wrap: wrap; height: auto; gap: 8px; }
+    .sk-toolbar .sk-block.search { width: 100%; }
+    .sk-table { display: none; }
+    .sk-cards { display: flex; flex-direction: column; }
+    .sk-card {
+      height: 98px; padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      display: flex; flex-direction: column; gap: 9px;
+    }
+    .sk-card .sk-top { display: flex; align-items: center; gap: 10px; }
+    .sk-card .sk-top .sk-line { height: 13px; }
+    .sk-card .sk-top .sk-line:last-child { margin-left: auto; width: 28%; }
+    .sk-bottom {
+      display: flex; position: fixed; left: 0; right: 0; bottom: 0;
+      height: 56px; z-index: 6;
+      background: var(--panel); border-top: 1px solid var(--line);
+    }
+    .sk-tab { flex: 1; display: grid; place-items: center; }
+    .sk-tab span { width: 34px; height: 10px; border-radius: 2px; }
+    #status { bottom: 68px; }
   }
 </style>
-<div id="status">MEMUAT SAMPLE LOG…</div>
+<body>
+<div id="skeleton" aria-hidden="true">
+  <aside class="sk-side">
+    <div class="sk-brand">
+      <span class="sk-logo"></span>
+      <span class="sk-line w90"></span>
+    </div>
+    <div class="sk-nav">
+      <span class="sk-line w60"></span>
+      <span class="sk-navrow"></span>
+      <span class="sk-navrow"></span>
+      <span class="sk-navrow"></span>
+    </div>
+    <div class="sk-side-bottom">
+      <span class="sk-line w70"></span>
+      <div class="sk-user">
+        <span class="sk-avatar"></span>
+        <span class="sk-col grow">
+          <span class="sk-line w50"></span>
+          <span class="sk-line w80"></span>
+        </span>
+      </div>
+    </div>
+  </aside>
+  <main class="sk-main">
+    <div class="sk-head">
+      <div class="sk-head-top">
+        <span class="sk-line w18 small"></span>
+        <span class="sk-spacer"></span>
+        <span class="sk-pill small"></span>
+        <span class="sk-pill"></span>
+        <span class="sk-pill small"></span>
+        <span class="sk-avatar"></span>
+      </div>
+      <span class="sk-line title w28"></span>
+      <span class="sk-line w36"></span>
+    </div>
+    <div class="sk-metrics">
+      <div class="sk-metric"><span class="sk-line w40"></span><span class="sk-line value w32"></span><span class="sk-bar"></span></div>
+      <div class="sk-metric"><span class="sk-line w56"></span><span class="sk-line value w18"></span><span class="sk-bar"></span></div>
+      <div class="sk-metric"><span class="sk-line w60"></span><span class="sk-line value w18"></span><span class="sk-bar"></span></div>
+      <div class="sk-metric"><span class="sk-line w60"></span><span class="sk-line value w18"></span><span class="sk-bar"></span></div>
+      <div class="sk-metric"><span class="sk-line w40"></span><span class="sk-line value w18"></span><span class="sk-bar"></span></div>
+      <div class="sk-metric"><span class="sk-line w50"></span><span class="sk-line value w18"></span><span class="sk-bar"></span></div>
+    </div>
+    <div class="sk-toolbar">
+      <span class="sk-block search"></span>
+      <span class="sk-line w8"></span>
+      <span class="sk-line w12"></span>
+      <span class="sk-line w12"></span>
+      <span class="sk-line w12"></span>
+      <span class="sk-line w12"></span>
+      <span class="sk-line w12"></span>
+      <span class="sk-spacer"></span>
+      <span class="sk-line w6"></span>
+    </div>
+    <div class="sk-table">
+      <div class="sk-tr sk-th">
+        <span class="sk-line w50"></span><span class="sk-line w60"></span><span class="sk-line w60"></span>
+        <span class="sk-line w70"></span><span class="sk-line w80"></span><span class="sk-line w60"></span>
+        <span class="sk-line w70"></span><span></span>
+      </div>
+      <div class="sk-tr"><span class="sk-line w80 tall"></span><span class="sk-line w70"></span><span class="sk-line w50"></span><span class="sk-line w60"></span><span class="sk-line w90"></span><span class="sk-line w60"></span><span class="sk-line w70"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w70 tall"></span><span class="sk-line w60"></span><span class="sk-line w40"></span><span class="sk-line w80"></span><span class="sk-line w80"></span><span class="sk-line w50"></span><span class="sk-line w80"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w60 tall"></span><span class="sk-line w70"></span><span class="sk-line w50"></span><span class="sk-line w50"></span><span class="sk-line w70"></span><span class="sk-line w60"></span><span class="sk-line w60"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w80 tall"></span><span class="sk-line w60"></span><span class="sk-line w40"></span><span class="sk-line w70"></span><span class="sk-line w90"></span><span class="sk-line w50"></span><span class="sk-line w70"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w70 tall"></span><span class="sk-line w70"></span><span class="sk-line w50"></span><span class="sk-line w60"></span><span class="sk-line w80"></span><span class="sk-line w60"></span><span class="sk-line w80"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w60 tall"></span><span class="sk-line w60"></span><span class="sk-line w40"></span><span class="sk-line w50"></span><span class="sk-line w70"></span><span class="sk-line w50"></span><span class="sk-line w60"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w80 tall"></span><span class="sk-line w70"></span><span class="sk-line w50"></span><span class="sk-line w80"></span><span class="sk-line w90"></span><span class="sk-line w60"></span><span class="sk-line w70"></span><span></span></div>
+      <div class="sk-tr"><span class="sk-line w70 tall"></span><span class="sk-line w60"></span><span class="sk-line w40"></span><span class="sk-line w60"></span><span class="sk-line w80"></span><span class="sk-line w50"></span><span class="sk-line w80"></span><span></span></div>
+    </div>
+    <div class="sk-cards">
+      <div class="sk-card">
+        <div class="sk-top"><span class="sk-line w60"></span><span class="sk-line w24"></span></div>
+        <span class="sk-line w40"></span>
+        <span class="sk-line w80"></span>
+        <span class="sk-line w56"></span>
+      </div>
+      <div class="sk-card">
+        <div class="sk-top"><span class="sk-line w70"></span><span class="sk-line w20"></span></div>
+        <span class="sk-line w36"></span>
+        <span class="sk-line w76"></span>
+        <span class="sk-line w50"></span>
+      </div>
+      <div class="sk-card">
+        <div class="sk-top"><span class="sk-line w56"></span><span class="sk-line w24"></span></div>
+        <span class="sk-line w40"></span>
+        <span class="sk-line w86"></span>
+        <span class="sk-line w60"></span>
+      </div>
+      <div class="sk-card">
+        <div class="sk-top"><span class="sk-line w66"></span><span class="sk-line w20"></span></div>
+        <span class="sk-line w32"></span>
+        <span class="sk-line w70"></span>
+        <span class="sk-line w46"></span>
+      </div>
+    </div>
+    <div class="sk-bottom">
+      <span class="sk-tab"><span class="sk-line"></span></span>
+      <span class="sk-tab"><span class="sk-line"></span></span>
+      <span class="sk-tab"><span class="sk-line"></span></span>
+    </div>
+  </main>
+</div>
+<p id="status" role="status" aria-live="polite">Memuat workspace…</p>
 <noscript><p style="padding:24px;font:13px system-ui">Aktifkan JavaScript dan WebGPU untuk membuka SampleTrack.</p></noscript>
 
 <script type="module">
 import init from './app.js';
+const status = document.querySelector('#status');
+const skeleton = document.querySelector('#skeleton');
 try {
     if (!navigator.gpu) throw new Error('WebGPU membutuhkan browser yang mendukung dan HTTPS.');
     await init();
-    document.querySelector('#status').remove();
+    skeleton?.remove();
+    status?.remove();
 } catch (error) {
-    document.querySelector('#status').textContent = String(error);
+    skeleton?.remove();
+    if (status) {
+        status.textContent = String(error);
+        status.className = 'error';
+    }
     console.error(error);
 }
 </script>
+</body>
 </html>
